@@ -288,8 +288,8 @@ function Enable-AdministratorAccount {
     [string]$username = Get-AdministratorAccount
     $setupCompletePath = "$env:windir\Setup\Scripts\SetupComplete.cmd"
     $activate = "powershell -c net user {0} /active:yes" -f $username
-    $expiration = 'wmic path Win32_UserAccount WHERE Name="{0}" set PasswordExpires=true' -f $username
-    $logonReset = "net.exe user {0} /logonpasswordchg:yes" -f $username
+    $expiration = 'wmic path Win32_UserAccount WHERE Name="{0}" set PasswordExpires=false' -f $username
+    $logonReset = "net.exe user {0} /logonpasswordchg:no" -f $username
     Add-Content -Encoding Ascii -Value $activate -Path $setupCompletePath
     Add-Content -Encoding Ascii -Value $expiration -Path $setupCompletePath
     Add-Content -Encoding Ascii -Value $logonReset -Path $setupCompletePath
@@ -509,6 +509,7 @@ try {
 
     Import-Module "$resourcesDir\ini.psm1"
 
+    $administratorPassword = Get-IniFileValue -Path $configIniPath -Section "vm" -Key "administrator_password" -Default "Pa`$`$w0rd@99871"
     $installUpdates = Get-IniFileValue -Path $configIniPath -Section "updates" -Key "install_updates" -Default $false -AsBoolean
     $persistDrivers = Get-IniFileValue -Path $configIniPath -Section "sysprep" -Key "persist_drivers_install" -Default $true -AsBoolean
     $purgeUpdates = Get-IniFileValue -Path $configIniPath -Section "updates" -Key "purge_updates" -Default $false -AsBoolean
@@ -614,7 +615,7 @@ try {
     Run-CustomScript "RunBeforeCloudbaseInitInstall.ps1"
     $Host.UI.RawUI.WindowTitle = "Installing Cloudbase-Init..."
 
-    $cloudbaseInitInstallDir = Join-Path $ENV:ProgramFiles "Cloudbase Solutions\Cloudbase-Init"
+    $cloudbaseInitInstallDir = "C:\Cloudbase-Init"
     $CloudbaseInitMsiPath = "$resourcesDir\CloudbaseInit.msi"
     $CloudbaseInitConfigPath = "$resourcesDir\cloudbase-init.conf"
     $CloudbaseInitUnattendedConfigPath = "$resourcesDir\cloudbase-init-unattend.conf"
@@ -627,7 +628,7 @@ try {
         }
     }
 
-    $msiexecArgumentList = "/i $CloudbaseInitMsiPath /qn /l*v $CloudbaseInitMsiLog"
+    $msiexecArgumentList = "/i $CloudbaseInitMsiPath /qn /l*v $CloudbaseInitMsiLog INSTALLDIR=$cloudbaseInitInstallDir"
     if ($serialPortName) {
         $msiexecArgumentList += " LOGGINGSERIALPORTNAME=$serialPortName"
     }
@@ -716,12 +717,30 @@ try {
     }
 
     Run-CustomScript "RunBeforeSysprep.ps1"
+    Write-Log "Sysprep" "Sysprep unattend xml: $unattendedXmlPath"
     Optimize-SparseImage
-    & "$ENV:SystemRoot\System32\Sysprep\Sysprep.exe" `/generalize `/oobe `/shutdown `/unattend:"$unattendedXmlPath"
+    # & "$ENV:SystemRoot\System32\Sysprep\Sysprep.exe" `/generalize `/oobe `/shutdown `/unattend:"$unattendedXmlPath"
+    Start-Process -FilePath "$ENV:SystemRoot\System32\Sysprep\Sysprep.exe" -ArgumentList "/generalize", "/oobe", "/quit", "/unattend:$unattendedXmlPath" -Wait
     Write-Log "Sysprep" "Sysprep initiated successfully"
     Run-CustomScript "RunAfterSysprep.ps1"
+
+    if (-not $windowsClient -or $enableAdministrator) {
+        [string]$username = Get-AdministratorAccount
+        Write-Log "SetupUser" "User: $username"
+        Invoke-Expression -Command "net user '$username' /active:yes"
+        $Password = ConvertTo-SecureString "$administratorPassword" -AsPlainText -Force
+        Set-LocalUser -Name "$username" -Password $Password
+        Invoke-Expression -Command "WMIC.EXE Path Win32_UserAccount Where Name='${username}' Set PasswordExpires='FALSE'"
+        Invoke-Expression -Command "net user '$username' /logonpasswordchg:no"    
+    }
+
     Clean-UpdateResources
     Write-Log "StatusFinal" "Waiting for sysprep to stop machine..."
+    Start-Sleep -Seconds 20
+
+    # Shut down the system
+    Stop-Computer -Force
+
 } catch {
     Write-Log "ERROR" $_.Exception.ToString()
     $x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

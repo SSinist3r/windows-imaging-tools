@@ -1,4 +1,4 @@
-Windows Imaging Tools
+Windows Imaging Tools Modified (Official: https://github.com/cloudbase/windows-imaging-tools)
 ===============================
 [![Master branch](https://ci.appveyor.com/api/projects/status/github/cloudbase/windows-openstack-imaging-tools?branch=master&svg=true)](https://ci.appveyor.com/project/ader1990/windows-openstack-imaging-tools-w885m)
 
@@ -23,6 +23,8 @@ The following versions of Windows images (both x86 / x64, if existent) to be gen
 To generate Windows Nano Server 2016, please use the following repository:
 
 https://github.com/cloudbase/cloudbase-init-offline-install
+
+Note: In this modified version it generate windows images with default Administrator password so that user don't have to go through iKvm type of stuff to reset password for the first time on all major dedicated server providers.
 
 ## Workflow of Windows imaging tools
 <img src="https://user-images.githubusercontent.com/1412442/29972658-8fd4d36a-8f35-11e7-80bd-cea90e48e8ba.png" width="750">

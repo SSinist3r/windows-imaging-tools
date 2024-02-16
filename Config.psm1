@@ -91,7 +91,7 @@ function Get-AvailableConfigOptions {
         @{"Name" = "enable_administrator_account"; "DefaultValue" = $false; "AsBoolean" = $true
           "Description" = "If set to true the Administrator account will be enabled on the client
                            versions of Windows, which have the Administrator account disabled by default"},
-        @{"Name" = "administrator_password"; "GroupName" = "vm"; "DefaultValue" = "Pa`$`$w0rd";
+        @{"Name" = "administrator_password"; "GroupName" = "vm"; "DefaultValue" = "Pa`$`$w0rd@99871";
           "Description" = "This will be the Administrator user's, so that AutoLogin can be performed on the instance,
                            in order to install the required products,
                            updates and perform the generation tasks like sysprep."},

@@ -47,7 +47,7 @@
                     <InstallFrom>
                         <MetaData wcm:action="add">
                             <Key>/IMAGE/NAME</Key>
-                            <Value>Windows Server 2012 R2 SERVERSTANDARD</Value>
+                            <Value>Windows Server 2022 SERVERSTANDARD</Value>
                         </MetaData>
                     </InstallFrom>
                 </OSImage>
@@ -109,6 +109,16 @@
                     <CommandLine>%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell -NoLogo -NonInteractive -ExecutionPolicy RemoteSigned -File %SystemDrive%\UnattendResources\FirstLogon.ps1</CommandLine>
                     <Order>1</Order>
                 </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>cmd /c net accounts /lockoutthreshold:0</CommandLine>
+                    <Description>Disable account lockout policy</Description>
+                    <Order>2</Order>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>cmd /c net accounts /maxpwage:unlimited</CommandLine>
+                    <Description>Set maximum password age to unlimited</Description>
+                    <Order>3</Order>
+                </SynchronousCommand>
             </FirstLogonCommands>
             <UserAccounts>
                 <!--
@@ -116,7 +126,7 @@
                     Must be reset with final Sysprep.
                 -->
                 <AdministratorPassword>
-                    <Value>Passw0rd</Value>
+                    <Value>Pa$$w0rd@99871</Value>
                     <PlainText>true</PlainText>
                 </AdministratorPassword>
                 <!-- The following is needed on a client OS -->
@@ -133,7 +143,7 @@
             </UserAccounts>
             <AutoLogon>
                 <Password>
-                    <Value>Passw0rd</Value>
+                    <Value>Pa$$w0rd@99871</Value>
                     <PlainText>true</PlainText>
                 </Password>
                 <Enabled>true</Enabled>

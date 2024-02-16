@@ -51,7 +51,8 @@ $VirtIODriverMappings = @{
     "w8.1" = @(9600, 9900, $false);
     "2k16" = @(14393, 16299, $true);
     "w10" = @(10240, $MAX_BUILD_NUMBER, $false);
-    "2k19" = @(17763, $MAX_BUILD_NUMBER, $true);
+    "2k19" = @(17763, 19999, $true);
+    "2k22" = @(20348, $MAX_BUILD_NUMBER, $true);
 }
 
 $AvailableCompressionFormats = @("tar","gz","zip")
@@ -2092,7 +2093,7 @@ function Test-OfflineWindowsImage {
                 Where-Object {@("Basic", "IFS") -contains $_.Type}).DriveLetter + ":"
 
             # Test if Cloudbase-Init is installed
-            $cloudbaseInitPath = "Program Files\Cloudbase Solutions\Cloudbase-Init"
+            $cloudbaseInitPath = "Cloudbase-Init"
             $cloudbaseInitPathX86 = "${cloudbaseInitPath} (x86)"
             if ((Test-Path (Join-Path $mountPoint $cloudbaseInitPath)) -or `
                 (Test-Path (Join-Path $mountPoint $cloudbaseInitPathX86))) {
